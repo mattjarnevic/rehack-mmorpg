@@ -49,6 +49,12 @@ class WorldScene extends Phaser.Scene {
 
     // user input
     this.cursors = this.input.keyboard.createCursorKeys();
+    this.wasd = {
+      up: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W),
+      down: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S),
+      left: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A),
+      right: this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D)
+  }
 
     // create enemies
     this.createEnemies();
@@ -271,37 +277,39 @@ class WorldScene extends Phaser.Scene {
     if (this.container) {
       this.container.body.setVelocity(0);
 
-      if (this.cursors.space.isDown) {
+      if (Phaser.Input.Keyboard.JustDown(this.cursors.space) && !this.attacking) {
         this.attacking = true;
+      }
+      else {
+        this.attacking = false;
       }
 
       // Horizontal movement
-      if (this.cursors.left.isDown) {
+      if (this.cursors.left.isDown || this.wasd.left.isDown) {
         this.container.body.setVelocityX(-80);
-      } else if (this.cursors.right.isDown) {
+      } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
         this.container.body.setVelocityX(80);
       }
 
       // Vertical movement
-      if (this.cursors.up.isDown) {
+      if (this.cursors.up.isDown || this.wasd.up.isDown) {
         this.container.body.setVelocityY(-80);
-      } else if (this.cursors.down.isDown) {
+      } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
         this.container.body.setVelocityY(80);
       }
 
       // Update the animation last and give left/right animations precedence over up/down animations
-      if (this.cursors.left.isDown) {
+      if (this.cursors.left.isDown || this.wasd.left.isDown) {
         this.player.anims.play('left', true);
         this.player.flipX = true;
-      } else if (this.cursors.right.isDown) {
+      } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
-      } else if (this.cursors.up.isDown) {
+      } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
         this.player.anims.play('up', true);
-      } else if (this.cursors.down.isDown) {
+      } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
         this.player.anims.play('down', true);
       } else {
-        this.attacking = false;
         this.player.anims.stop();
       }
 
@@ -329,13 +337,17 @@ var config = {
   height: 240,
   zoom: 3,
   pixelArt: true,
+  scale: {
+    mode: Phaser.Scale.ENVELOP,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   physics: {
     default: 'arcade',
     arcade: {
       gravity: {
         y: 0
       },
-      debug: true // set to true to view zones
+      debug: false // set to true to view zones
     }
   },
   scene: [
