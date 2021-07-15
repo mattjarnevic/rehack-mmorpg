@@ -11,6 +11,13 @@ class BootScene extends Phaser.Scene {
     // this.load.image('tiles', 'assets/map/grass.png')
     this.load.image('tiles', 'assets/map/Atlas.png')
 
+    this.load.image('gamepad', 'assets/map/gamepad_spritesheet.png')
+
+    this.load.audio("westworld", ["assets/map/westworld.mp3"]);
+
+    // vision gradient
+    this.load.image('vision', 'assets/map/vision.png')
+
     // map in json format
     // this.load.tilemapTiledJSON('tilemap', 'assets/map/tilemap.json')
     this.load.tilemapTiledJSON('tilemap', 'assets/map/west.json')
@@ -94,6 +101,18 @@ class WorldScene extends Phaser.Scene {
         }
       }.bind(this));
     }.bind(this));
+
+    // Add the VirtualGamepad plugin to the game
+    // this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
+
+    // // Add a joystick to the game (only one is allowed right now)
+    // this.joystick = this.gamepad.addJoystick(100, 420, 1.2, 'gamepad');
+
+    // // Add a button to the game (only one is allowed right now)
+    // this.button = this.gamepad.addButton(400, 420, 1.0, 'gamepad');
+
+    this.music = this.sound.add("westworld", { loop: true });
+    this.music.play();
   }
 
   // createMap() {
@@ -118,10 +137,27 @@ class WorldScene extends Phaser.Scene {
     this.map = this.make.tilemap({ key: 'tilemap' })
 		const tileset = this.map.addTilesetImage('tileset', 'tiles')
 
-		this.map.createStaticLayer('Ground', tileset)
+		const groundLayer = this.map.createStaticLayer('Ground', tileset)
 		var buildingsLayer = this.map.createStaticLayer('Buildings', tileset)
 
-    buildingsLayer.setCollisionByExclusion([-1]);
+    const width = this.scale.width
+    const height = this.scale.height
+
+    // make a RenderTexture that is the size of the screen
+    this.rt = this.make.renderTexture({
+      width: this.scale.canvasBounds.width,
+      height: this.scale.canvasBounds.height
+    }, true)
+
+    // fill it with black
+    this.rt.fill(0x000000, 1)
+
+    // draw the floorLayer into it
+    this.rt.draw(groundLayer)
+    // rt.draw(buildingsLayer)
+
+    // set a dark blue tint
+    this.rt.setTint(0x0a2948)
 
     // don't go out of the map
     this.physics.world.bounds.width = this.map.widthInPixels;
@@ -195,6 +231,18 @@ class WorldScene extends Phaser.Scene {
     this.physics.add.collider(this.container, this.spawns);
 
     this.physics.add.overlap(this.weapon, this.spawns, this.onMeetEnemy, false, this);
+
+    this.vision = this.make.image({
+      x: playerInfo.x,
+      y: playerInfo.y,
+      key: 'vision',
+      add: false
+    })
+
+    this.vision.scale = 0.1
+
+    this.rt.mask = new Phaser.Display.Masks.BitmapMask(this, this.vision)
+    // this.rt.mask.invertAlpha = true
   }
 
   addOtherPlayers(playerInfo) {
@@ -302,6 +350,16 @@ class WorldScene extends Phaser.Scene {
         this.attacking = false;
       }
 
+      // Read joystick data to set ship's angle and acceleration
+      // if (this.joystick.properties.inUse) {
+      //   this.player.angle = this.joystick.properties.angle;
+      //   this.player.lastAngle = this.player.angle;
+      // } else {
+      //     this.player.angle = this.player.lastAngle;
+      // }
+      // this.player.body.acceleration.x = 4 * this.joystick.properties.x;
+      // this.player.body.acceleration.y = 4 * this.joystick.properties.y;
+
       // Horizontal movement
       if (this.cursors.left.isDown || this.wasd.left.isDown) {
         this.container.body.setVelocityX(-80);
@@ -344,6 +402,12 @@ class WorldScene extends Phaser.Scene {
         y: this.container.y,
         flipX: this.player.flipX
       };
+
+      if (this.vision)
+      {
+        this.vision.x = this.container.x
+        this.vision.y = this.container.y
+      }
     }
   }
 }
