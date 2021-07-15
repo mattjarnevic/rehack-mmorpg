@@ -8,9 +8,13 @@ class BootScene extends Phaser.Scene {
 
   preload() {
     // map tiles
-    this.load.image('tiles', 'assets/map/spritesheet-extruded.png');
+    // this.load.image('tiles', 'assets/map/grass.png')
+    this.load.image('tiles', 'assets/map/Atlas.png')
+
     // map in json format
-    this.load.tilemapTiledJSON('map', 'assets/map/map.json');
+    // this.load.tilemapTiledJSON('tilemap', 'assets/map/tilemap.json')
+    this.load.tilemapTiledJSON('tilemap', 'assets/map/west.json')
+
     // our two characters
     this.load.spritesheet('player', 'assets/RPG_assets.png', {
       frameWidth: 16,
@@ -92,18 +96,32 @@ class WorldScene extends Phaser.Scene {
     }.bind(this));
   }
 
+  // createMap() {
+  //   // create the map
+  //   this.map = this.make.tilemap({
+  //     key: 'map'
+  //   });
+
+  //   // first parameter is the name of the tilemap in tiled
+  //   var tiles = this.map.addTilesetImage('spritesheet', 'tiles');
+
+  //   // creating the layers
+  //   this.map.createStaticLayer('Grass', tiles);
+  //   this.map.createStaticLayer('Obstacles', tiles);
+
+  //   // don't go out of the map
+  //   this.physics.world.bounds.width = this.map.widthInPixels;
+  //   this.physics.world.bounds.height = this.map.heightInPixels;
+  // }
+
   createMap() {
-    // create the map
-    this.map = this.make.tilemap({
-      key: 'map'
-    });
+    this.map = this.make.tilemap({ key: 'tilemap' })
+		const tileset = this.map.addTilesetImage('tileset', 'tiles')
 
-    // first parameter is the name of the tilemap in tiled
-    var tiles = this.map.addTilesetImage('spritesheet', 'tiles', 16, 16, 1, 2);
+		this.map.createStaticLayer('Ground', tileset)
+		var buildingsLayer = this.map.createStaticLayer('Buildings', tileset)
 
-    // creating the layers
-    this.map.createStaticLayer('Grass', tiles, 0, 0);
-    this.map.createStaticLayer('Obstacles', tiles, 0, 0);
+    buildingsLayer.setCollisionByExclusion([-1]);
 
     // don't go out of the map
     this.physics.world.bounds.width = this.map.widthInPixels;
@@ -333,12 +351,14 @@ class WorldScene extends Phaser.Scene {
 var config = {
   type: Phaser.AUTO,
   parent: 'content',
-  width: 320,
-  height: 240,
+  width: 480,
+  height: 360,
   zoom: 3,
   pixelArt: true,
   scale: {
-    mode: Phaser.Scale.ENVELOP,
+    pageAlignHorizontally: true,
+    pageAlignVertically: true,
+    mode: Phaser.Scale.SHOW_ALL,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
   physics: {
