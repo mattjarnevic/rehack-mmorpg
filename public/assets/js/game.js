@@ -7,6 +7,9 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    // joystick
+    const url = 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexvirtualjoystickplugin.min.js';
+    this.load.plugin('rexvirtualjoystickplugin', url, true);
     // map tiles
     // this.load.image('tiles', 'assets/map/grass.png')
     this.load.image('tiles', 'assets/map/Atlas.png')
@@ -37,6 +40,8 @@ class BootScene extends Phaser.Scene {
   }
 
   create() {
+    this.music = this.sound.add("westworld", { loop: true });
+    this.music.play();
     this.scene.start('WorldScene');
   }
 }
@@ -57,6 +62,18 @@ class WorldScene extends Phaser.Scene {
 
     // create player animations
     this.createAnimations();
+
+    // joystick
+    this.joyStick = this.plugins.get('rexvirtualjoystickplugin').add(this, {
+      x: 80,
+      y: 400,
+      radius: 50,
+      base: this.add.circle(0, 0, 50, 0x888888),
+      thumb: this.add.circle(0, 0, 15, 0xcccccc),
+      dir: '8dir',   // 'up&down'|0|'left&right'|1|'4dir'|2|'8dir'|3
+      forceMin: 8,
+      enable: true
+  });
 
     // user input
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -101,18 +118,6 @@ class WorldScene extends Phaser.Scene {
         }
       }.bind(this));
     }.bind(this));
-
-    // Add the VirtualGamepad plugin to the game
-    // this.gamepad = this.game.plugins.add(Phaser.Plugin.VirtualGamepad);
-
-    // // Add a joystick to the game (only one is allowed right now)
-    // this.joystick = this.gamepad.addJoystick(100, 420, 1.2, 'gamepad');
-
-    // // Add a button to the game (only one is allowed right now)
-    // this.button = this.gamepad.addButton(400, 420, 1.0, 'gamepad');
-
-    this.music = this.sound.add("westworld", { loop: true });
-    this.music.play();
   }
 
   // createMap() {
@@ -361,29 +366,29 @@ class WorldScene extends Phaser.Scene {
       // this.player.body.acceleration.y = 4 * this.joystick.properties.y;
 
       // Horizontal movement
-      if (this.cursors.left.isDown || this.wasd.left.isDown) {
+      if (this.cursors.left.isDown || this.wasd.left.isDown || this.joyStick.left) {
         this.container.body.setVelocityX(-80);
-      } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+      } else if (this.cursors.right.isDown || this.wasd.right.isDown || this.joyStick.right) {
         this.container.body.setVelocityX(80);
       }
 
       // Vertical movement
-      if (this.cursors.up.isDown || this.wasd.up.isDown) {
+      if (this.cursors.up.isDown || this.wasd.up.isDown || this.joyStick.up) {
         this.container.body.setVelocityY(-80);
-      } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+      } else if (this.cursors.down.isDown || this.wasd.down.isDown || this.joyStick.down) {
         this.container.body.setVelocityY(80);
       }
 
       // Update the animation last and give left/right animations precedence over up/down animations
-      if (this.cursors.left.isDown || this.wasd.left.isDown) {
+      if (this.cursors.left.isDown || this.wasd.left.isDown || this.joyStick.left) {
         this.player.anims.play('left', true);
         this.player.flipX = true;
-      } else if (this.cursors.right.isDown || this.wasd.right.isDown) {
+      } else if (this.cursors.right.isDown || this.wasd.right.isDown || this.joyStick.right) {
         this.player.anims.play('right', true);
         this.player.flipX = false;
-      } else if (this.cursors.up.isDown || this.wasd.up.isDown) {
+      } else if (this.cursors.up.isDown || this.wasd.up.isDown || this.joyStick.up) {
         this.player.anims.play('up', true);
-      } else if (this.cursors.down.isDown || this.wasd.down.isDown) {
+      } else if (this.cursors.down.isDown || this.wasd.down.isDown || this.joyStick.down) {
         this.player.anims.play('down', true);
       } else {
         this.player.anims.stop();
@@ -415,14 +420,14 @@ class WorldScene extends Phaser.Scene {
 var config = {
   type: Phaser.AUTO,
   parent: 'content',
-  width: 480,
-  height: 360,
+  width: 640,
+  height: 480,
   zoom: 3,
   pixelArt: true,
   scale: {
     pageAlignHorizontally: true,
     pageAlignVertically: true,
-    mode: Phaser.Scale.SHOW_ALL,
+    mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
   physics: {
