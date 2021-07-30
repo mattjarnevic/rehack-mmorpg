@@ -427,7 +427,7 @@ var config = {
   scale: {
     pageAlignHorizontally: true,
     pageAlignVertically: true,
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.SHOW_ALL,
     autoCenter: Phaser.Scale.CENTER_BOTH
   },
   physics: {
